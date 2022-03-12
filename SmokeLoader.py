@@ -16,8 +16,10 @@ import os
 from PIL import ImageTk, Image
 
 # A vector like class for positioning widgets
+
+
 class GridPosition:
-    def __init__(self, passed_row = None, passed_column = None):
+    def __init__(self, passed_row=None, passed_column=None):
         self.row = passed_row
         self.column = passed_column
 
@@ -33,10 +35,16 @@ class GridPosition:
     def set_column(self, passed_column):
         self.column = passed_column
 
-# Cell_Widget custom class for setting widgets to add to display or remove easier
+# Cell_Widget custom class for setting widgets to add to display or remove
+# easier
+
 
 class Cell_Widget:
-    def __init__(self, passed_widget, passed_grid_position, passed_cell_id_name):
+    def __init__(
+            self,
+            passed_widget,
+            passed_grid_position,
+            passed_cell_id_name):
         self.cell_widget = passed_widget
         self.cell_position = passed_grid_position
         self.cell_id_name = passed_cell_id_name
@@ -53,7 +61,9 @@ class Cell_Widget:
     def show_widget(self):
         if self.cell_widget:
             if self.cell_position:
-                self.cell_widget.grid(row=self.cell_position.row, column=self.cell_position.column)
+                self.cell_widget.grid(
+                    row=self.cell_position.row,
+                    column=self.cell_position.column)
 
     def hide_widget(self):
         if self.cell_widget:
@@ -63,7 +73,8 @@ class Cell_Widget:
             if self.cell_widget.winfo_exists():
                 self.cell_widget.grid_remove()
 
-debug_messages = True
+
+debug_messages = False
 currentFolder = os.path.dirname(os.path.realpath(__file__))
 
 download_gui_modes = ["tag download", "pool download"]
@@ -72,7 +83,7 @@ global current_mode
 
 current_mode = download_gui_modes[1]
 
-#dictionary to store setup tools
+# dictionary to store setup tools
 
 app_setup_tools = {}
 
@@ -85,7 +96,7 @@ app_setup_tools["currentFolder"] = currentFolder
 
 # app page
 
-app_pages = ["","index_page","ask_for_api_key_page","download_page"]
+app_pages = ["", "index_page", "ask_for_api_key_page", "download_page"]
 
 global current_app_page
 
@@ -100,7 +111,7 @@ download_page_gui_objects = {}
 
 submit_key_page_gui_objects = {}
 
-# dictionary to store index 
+# dictionary to store index
 
 index_page_gui_objects = {}
 
@@ -110,20 +121,24 @@ index_page_gui_objects = {}
 #
 ####################################################
 
-def record_provided_credentials_to_file():
-    
-    passed_username = submit_key_page_gui_objects["api_username_entry"].get_cell_widget().get()
 
-    
-    passed_api_key = submit_key_page_gui_objects["api_key_entry"].get_cell_widget().get()
+def record_provided_credentials_to_file():
+
+    passed_username = submit_key_page_gui_objects["api_username_entry"].get_cell_widget(
+    ).get()
+
+    passed_api_key = submit_key_page_gui_objects["api_key_entry"].get_cell_widget(
+    ).get()
 
     print(f"user passed: {passed_username}")
     print(f"api key passed: {passed_api_key}")
 
     with open(apiKeyFile, "w") as apiFile:
-        apiFile.write(f"user={passed_username}" + os.linesep + f"api_key={passed_api_key}")
+        apiFile.write(
+            f"user={passed_username}" +
+            os.linesep +
+            f"api_key={passed_api_key}")
 
-    
     clear_ask_for_api_info_page()
     present_gui_download_page()
 
@@ -136,21 +151,22 @@ def record_provided_credentials_to_file():
 
 
 def change_label_text(passed_label, passed_text):
-    
+
     passed_label.config(text=passed_text)
 
 
 def download_start():
     global current_mode
-    
 
-
-    change_label_text(download_page_gui_objects["download_message_label"].get_cell_widget(), "download started...")
+    change_label_text(
+        download_page_gui_objects["download_message_label"].get_cell_widget(),
+        "download started...")
 
     # Stop the button from being clicked again until downloading is done
-    
-    download_page_gui_objects["download_button"].get_cell_widget().config(state=DISABLED)
-    
+
+    download_page_gui_objects["download_button"].get_cell_widget().config(
+        state=DISABLED)
+
     # gui_modes = ["tag download","pool download"]
 
     # if in tag download mode download tags
@@ -168,12 +184,14 @@ def download_start():
 
 
 def tag_e621_download():
-    
+
     # get the entered search tags
-    tags_entry_input = download_page_gui_objects["search_entry"].get_cell_widget().get()
+    tags_entry_input = download_page_gui_objects["search_entry"].get_cell_widget(
+    ).get()
 
     # get the destination for the file what will be downloaded
-    passed_save_directory = download_page_gui_objects["save_directory_entry"].get_cell_widget().get()
+    passed_save_directory = download_page_gui_objects["save_directory_entry"].get_cell_widget(
+    ).get()
 
     fail_pool_id_conditions = [
         "",
@@ -192,33 +210,36 @@ def tag_e621_download():
             ready_status = False
 
     # input pass checks
-    if ready_status:                
+    if ready_status:
 
         if debug_messages:
-            
+
             print(tags_entry_input)
 
-        #call tag downloader
-        #python source call
-        
+        # call tag downloader
+        # python source call
+
         command = f"python3 e621_download_by_tag.py -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
 
         # send the command to system
         os.system(command)
-        
-        # after download program is either finish from error of completed downloading
 
-        download_page_gui_objects["download_button"].get_cell_widget().config(state=NORMAL)
+        # after download program is either finish from error of completed
+        # downloading
+
+        download_page_gui_objects["download_button"].get_cell_widget().config(
+            state=NORMAL)
 
         # good or fail process is done send download complete message
-        
+
         change_label_text(
             download_page_gui_objects["download_message_label"].get_cell_widget(),
             "download is complete")
     else:
-        #download_button.config(state=NORMAL)
-        
-        download_page_gui_objects["download_button"].get_cell_widget().config(state=NORMAL)
+        # download_button.config(state=NORMAL)
+
+        download_page_gui_objects["download_button"].get_cell_widget().config(
+            state=NORMAL)
         """change_label_text(
             download_message_label,
             "error invalid entry detected")"""
@@ -230,9 +251,11 @@ def tag_e621_download():
 
 def pull_e621_pool():
     #passed_pool_id = search_entry.get()
-    passed_pool_id = download_page_gui_objects["search_entry"].get_cell_widget().get()
+    passed_pool_id = download_page_gui_objects["search_entry"].get_cell_widget(
+    ).get()
     #passed_save_directory = save_directory_entry.get()
-    passed_save_directory = download_page_gui_objects["save_directory_entry"].get_cell_widget().get()
+    passed_save_directory = download_page_gui_objects["save_directory_entry"].get_cell_widget(
+    ).get()
 
     fail_pool_id_conditions = [
         "",
@@ -253,25 +276,27 @@ def pull_e621_pool():
 
     # input pass checks
     if ready_status:
-        
+
         command = f"python3 e621_pool_downloader.py -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
-        
-        #command = "py ./pool_pull_gui/e6_pool_downloader.py -p 26411 -d ./"
 
-        os.system(command)       
+        os.system(command)
 
-        download_page_gui_objects["download_button"].get_cell_widget().config(state=NORMAL)
+        download_page_gui_objects["download_button"].get_cell_widget().config(
+            state=NORMAL)
 
-        change_label_text(download_page_gui_objects["download_message_label"].get_cell_widget(), "download is complete")
+        change_label_text(
+            download_page_gui_objects["download_message_label"].get_cell_widget(),
+            "download is complete")
     else:
-        #download_button.config(state=NORMAL)
+        # download_button.config(state=NORMAL)
 
-        download_page_gui_objects["download_button"].get_cell_widget().config(state=NORMAL)
-        
+        download_page_gui_objects["download_button"].get_cell_widget().config(
+            state=NORMAL)
+
         change_label_text(
             download_page_gui_objects["download_message_label"].get_cell_widget(),
             "error invalid entry detected")
-          
+
 
 def switch_downloader_mode():
     global current_mode
@@ -283,21 +308,23 @@ def switch_downloader_mode():
         current_mode = download_gui_modes[1]
 
         # change switch text
-        
-        download_page_gui_objects["pool_tag_switch"].get_cell_widget().config(text="switch to tags")
+
+        download_page_gui_objects["pool_tag_switch"].get_cell_widget().config(
+            text="switch to tags")
         # change search_entry label
-        
-        download_page_gui_objects["search_label"].get_cell_widget().config(text="Pool ID#")
-        
+
+        download_page_gui_objects["search_label"].get_cell_widget().config(
+            text="Pool ID#")
 
         # change search_entry text
-        
-        download_page_gui_objects["search_entry"].get_cell_widget().delete(0, "end")
+
+        download_page_gui_objects["search_entry"].get_cell_widget().delete(
+            0, "end")
 
         # enter pool id message
-        
 
-        download_page_gui_objects["search_entry"].get_cell_widget().insert(0, "Enter the pools id")
+        download_page_gui_objects["search_entry"].get_cell_widget().insert(
+            0, "Enter the pools id")
 
     # if on pool download mode switch to tag download mode
     elif current_mode == download_gui_modes[1]:
@@ -305,20 +332,25 @@ def switch_downloader_mode():
         current_mode = download_gui_modes[0]
 
         # change switch text
-        
-        download_page_gui_objects["pool_tag_switch"].get_cell_widget().config(text="switch to pool")
+
+        download_page_gui_objects["pool_tag_switch"].get_cell_widget().config(
+            text="switch to pool")
 
         # change search_entry label
-        
-        download_page_gui_objects["search_label"].get_cell_widget().config(text="Search tags")
+
+        download_page_gui_objects["search_label"].get_cell_widget().config(
+            text="Search tags")
 
         # change search_entry text
-        
-        download_page_gui_objects["search_entry"].get_cell_widget().delete(0, "end")
+
+        download_page_gui_objects["search_entry"].get_cell_widget().delete(
+            0, "end")
 
         # enter search tags message
-        
-        download_page_gui_objects["search_entry"].get_cell_widget().insert(0, "Enter the search tags")
+
+        download_page_gui_objects["search_entry"].get_cell_widget().insert(
+            0, "Enter the search tags")
+
 
 """
 
@@ -326,48 +358,53 @@ Download page functions
 
 
 """
-       
 
 
 def clear_search_entry():
 
     # change search_entry text
-    
-    download_page_gui_objects["search_entry"].get_cell_widget().delete(0, "end")
+
+    download_page_gui_objects["search_entry"].get_cell_widget().delete(
+        0, "end")
 
 
 def clear_directory_entry():
 
     # change search_entry text
-    
-    download_page_gui_objects["save_directory_entry"].get_cell_widget().delete(0, "end")
+
+    download_page_gui_objects["save_directory_entry"].get_cell_widget().delete(
+        0, "end")
+
 
 def clear_current_page():
-    
 
     #app_pages = ["index_page","ask_for_api_key_page","download_page"]
     if current_app_page == "index_page":
         mmh = "do a thing"
         hide_index_page_objects()
     elif current_app_page == "ask_for_api_key_page":
-        
+
         clear_ask_for_api_info_page()
-    
+
     elif current_app_page == "download_page":
-        
+
         hide_gui_download_elements()
+
 
 def explorer_directory_select():
     selected_save_directory = filedialog.askdirectory()
 
     # clear entry if a directory is chosen
     if selected_save_directory:
-        
-        download_page_gui_objects["save_directory_entry"].get_cell_widget().delete(0, "end")
-        download_page_gui_objects["save_directory_entry"].get_cell_widget().insert(0, selected_save_directory)
+
+        download_page_gui_objects["save_directory_entry"].get_cell_widget().delete(
+            0, "end")
+        download_page_gui_objects["save_directory_entry"].get_cell_widget().insert(
+            0, selected_save_directory)
+
 
 def load_gui_download_page():
-    
+
     switch_text = None
     search_text = None
 
@@ -381,26 +418,27 @@ def load_gui_download_page():
         switch_text = "switch to tags"
         search_text = "Pool ID#"
 
-
     if ("pool_tag_switch" in download_page_gui_objects) == False:
 
         download_page_gui_objects["pool_tag_switch"] = Cell_Widget(Button(
             root,
             text=switch_text,
             command=switch_downloader_mode,
-            fg="blue"),GridPosition(0,0),"pool_tag_switch")
-
+            fg="blue"), GridPosition(0, 0), "pool_tag_switch")
 
     # search label
     # starts in pool mode , maybe it should start in tags?
     if ("search_label" in download_page_gui_objects) == False:
-        download_page_gui_objects["search_label"] = Cell_Widget(Label(root, text=search_text),GridPosition(1,0),"search_label")
+        download_page_gui_objects["search_label"] = Cell_Widget(
+            Label(root, text=search_text), GridPosition(1, 0), "search_label")
 
     # search entry
     if ("search_entry" in download_page_gui_objects) == False:
-        download_page_gui_objects["search_entry"] = Cell_Widget(Entry(root, width=50),GridPosition(2,0),"search_entry")
+        download_page_gui_objects["search_entry"] = Cell_Widget(
+            Entry(root, width=50), GridPosition(2, 0), "search_entry")
 
-        download_page_gui_objects["search_entry"].get_cell_widget().insert(0, "Enter the pools id")
+        download_page_gui_objects["search_entry"].get_cell_widget().insert(
+            0, "Enter the pools id")
 
     # clear search button
 
@@ -408,52 +446,51 @@ def load_gui_download_page():
 
         download_page_gui_objects["clear_search_input_button"] = Cell_Widget(
             Button(root, text="X", command=clear_search_entry, fg="red"),
-            GridPosition(2,1),
+            GridPosition(2, 1),
             "clear_search_input_button"
-            )
+        )
 
-
-
-    download_page_gui_objects["save_directory_label"] = Cell_Widget(Label(root, text="Save Directory"),GridPosition(3,0),"save_directory_label")
+    download_page_gui_objects["save_directory_label"] = Cell_Widget(
+        Label(root, text="Save Directory"), GridPosition(3, 0), "save_directory_label")
 
     # save directory entry
     #
-    download_page_gui_objects["save_directory_entry"] = Cell_Widget(Entry(root, width=50),GridPosition(4,0),"save_directory_entry")
+    download_page_gui_objects["save_directory_entry"] = Cell_Widget(
+        Entry(root, width=50), GridPosition(4, 0), "save_directory_entry")
 
-
-    download_page_gui_objects["save_directory_entry"].get_cell_widget().insert(0, "Enter the save directory")
+    download_page_gui_objects["save_directory_entry"].get_cell_widget().insert(
+        0, "Enter the save directory")
 
     # clear directory input button
 
-
-    download_page_gui_objects["clear_directory_input_button"] = Cell_Widget(Button(
-        root, text="X", command=clear_directory_entry, fg="red"),GridPosition(4,1),"clear_directory_input_button")
+    download_page_gui_objects["clear_directory_input_button"] = Cell_Widget(
+        Button(
+            root, text="X", command=clear_directory_entry, fg="red"), GridPosition(
+            4, 1), "clear_directory_input_button")
 
     # select directory button
 
     # folder image lol this thing is a problem tbh
     # windows / univeral?
     folder_image = PhotoImage(
-        #file=f"{currentFolder}/images/folder_image/folder.png")
-        #exe version
+        # file=f"{currentFolder}/images/folder_image/folder.png")
+        # exe version
         file=f"{currentFolder}/images/folder.png")
     # linux
     #folder_image = PhotoImage(file = r"/usr/local/lib/e621_smoke_gui_downloaders/images/folder_image/folder.png")
 
-
     resized_folder_image = folder_image.subsample(3, 3)
 
     download_page_gui_objects["select_directory_button_folder_image"] = resized_folder_image
-    
+
     download_page_gui_objects["select_directory_button"] = Cell_Widget(
         Button(
-        root,
-        image=resized_folder_image,
-        command=explorer_directory_select),
-        GridPosition(4,2),
+            root,
+            image=resized_folder_image,
+            command=explorer_directory_select),
+        GridPosition(4, 2),
         "select_directory_button"
-        )
-    
+    )
 
     """folder_image = Image.open(f"{currentFolder}/images/folder.png")
 
@@ -472,115 +509,92 @@ def load_gui_download_page():
         "select_directory_button"
         )"""
 
-      
-
     # save input directory for future use
 
-
     # download button
-
 
     download_page_gui_objects["download_button"] = Cell_Widget(Button(
         root,
         text="Download",
         command=download_start,
         fg="blue"),
-        GridPosition(5,0),
+        GridPosition(5, 0),
         "download_button"
-        )
+    )
 
     download_page_gui_objects["download_message_label"] = Cell_Widget(
         Label(root, text=""),
-        GridPosition(6,0),
+        GridPosition(6, 0),
         "download_message_label"
     )
 
 # perhaps check for tools, the downloaders (pool and tag downloaders)
+
+
 def present_gui_download_page():
     global current_app_page
     """app_pages = ["","index_page","ask_for_api_key_page","download_page"]
 
     current_app_page = app_pages[0] """
-    # if the app is not currently displaying the download page   
+    # if the app is not currently displaying the download page
     if current_app_page != "download_page":
 
-        #clear the current page, then show download page
+        # clear the current page, then show download page
 
         clear_current_page()
 
         load_gui_download_page()
 
         current_app_page = "download_page"
-        
 
         download_page_gui_objects["pool_tag_switch"].show_widget()
 
-        
-
         download_page_gui_objects["search_label"].show_widget()
-
-        
 
         download_page_gui_objects["search_entry"].show_widget()
 
-        
-
         download_page_gui_objects["clear_search_input_button"].show_widget()
 
-        
         download_page_gui_objects["save_directory_label"].show_widget()
 
-        
         download_page_gui_objects["save_directory_entry"].show_widget()
-
-        
 
         download_page_gui_objects["clear_directory_input_button"].show_widget()
 
-        
         # readd image to folder button
-        download_page_gui_objects["select_directory_button"].get_cell_widget().config(image=download_page_gui_objects["select_directory_button_folder_image"])
+        download_page_gui_objects["select_directory_button"].get_cell_widget().config(
+            image=download_page_gui_objects["select_directory_button_folder_image"])
         download_page_gui_objects["select_directory_button"].show_widget()
 
-        
-
         download_page_gui_objects["download_button"].show_widget()
-
-        
 
         download_page_gui_objects["download_message_label"].show_widget()
 
 # removes the download page widgits from the grid
-def hide_gui_download_elements():    
+
+
+def hide_gui_download_elements():
 
     download_page_gui_objects["pool_tag_switch"].hide_widget()
-    
 
     download_page_gui_objects["search_label"].hide_widget()
-    
 
     download_page_gui_objects["search_entry"].hide_widget()
-    
 
     download_page_gui_objects["clear_search_input_button"].hide_widget()
 
-    
     download_page_gui_objects["save_directory_label"].hide_widget()
 
-    
     download_page_gui_objects["save_directory_entry"].hide_widget()
 
-    
     download_page_gui_objects["clear_directory_input_button"].hide_widget()
 
-    
     download_page_gui_objects["select_directory_button"].hide_widget()
-    
 
     download_page_gui_objects["download_button"].hide_widget()
-    
 
     download_page_gui_objects["download_message_label"].hide_widget()
+
 
 """
 
@@ -594,51 +608,53 @@ API Key page functions
 #
 ################################################
 
-
-
-    # present widits to download stuff
+# present widits to download stuff
 
 # shows for to ask for missing "apikey.txt" file
 
-def load_ask_for_api_info_page():
 
+def load_ask_for_api_info_page():
     """app_pages = ["","index_page","ask_for_api_key_page","download_page"]
 
-    current_app_page = app_pages[0] """    
-    
-    
+    current_app_page = app_pages[0] """
+
     if ("missing_api_key_message_label" in submit_key_page_gui_objects) == False:
-        missing_key_text ="\"apikey.txt\" was not found please enter your api info to continue"
+        missing_key_text = "\"apikey.txt\" was not found please enter your api info to continue"
         submit_key_page_gui_objects["missing_api_key_message_label"] = Cell_Widget(
-            Label(root, text=missing_key_text, font=('Mistral 18 bold')),
-            GridPosition(0,0),
-            "missing_api_key_message_label"
-        )
+            Label(
+                root, text=missing_key_text, font=('Mistral 10 bold')), GridPosition(
+                0, 0), "missing_api_key_message_label")
     if ("enter_username_label" in submit_key_page_gui_objects) == False:
         submit_key_page_gui_objects["enter_username_label"] = Cell_Widget(
-            Label(root, text= "Please enter your E621 username", font=('Mistral 18 bold')),
-            GridPosition(1,0),
-            "enter_username_label"
-        )
+            Label(
+                root,
+                text="Please enter your E621 username",
+                font=('Mistral 10 bold')),
+            GridPosition(
+                1,
+                0),
+            "enter_username_label")
 
     if ("api_username_entry" in submit_key_page_gui_objects) == False:
-        submit_key_page_gui_objects["api_username_entry"] = Cell_Widget(Entry(root, width=50),
-        GridPosition(2,0),
-        "api_username_entry"
-        )
+        submit_key_page_gui_objects["api_username_entry"] = Cell_Widget(
+            Entry(root, width=50), GridPosition(2, 0), "api_username_entry")
 
     if ("enter_api_key_label" in submit_key_page_gui_objects) == False:
 
         submit_key_page_gui_objects["enter_api_key_label"] = Cell_Widget(
-            Label(root, text= "Please enter your E621 API key", font=('Mistral 18 bold')),
-            GridPosition(3,0),
-            "enter_api_key_label"
-        )
+            Label(
+                root,
+                text="Please enter your E621 API key",
+                font=('Mistral 10 bold')),
+            GridPosition(
+                3,
+                0),
+            "enter_api_key_label")
 
-    if ("api_key_entry" in submit_key_page_gui_objects) == False: 
+    if ("api_key_entry" in submit_key_page_gui_objects) == False:
         submit_key_page_gui_objects["api_key_entry"] = Cell_Widget(
             Entry(root, width=50),
-            GridPosition(4,0),
+            GridPosition(4, 0),
             "api_key_entry"
         )
 
@@ -646,9 +662,10 @@ def load_ask_for_api_info_page():
 
         submit_key_page_gui_objects["api_key_page_submit_button"] = Cell_Widget(
             Button(root, text="submit", command=record_provided_credentials_to_file),
-            GridPosition(5,0),
+            GridPosition(5, 0),
             "api_key_page_submit_button"
         )
+
 
 def present_ask_for_api_info_page():
 
@@ -656,7 +673,7 @@ def present_ask_for_api_info_page():
 
     if current_app_page != "ask_for_api_key_page":
 
-        #clear the current page, then show download page
+        # clear the current page, then show download page
 
         clear_current_page()
 
@@ -664,44 +681,83 @@ def present_ask_for_api_info_page():
 
     # app_pages = ["","index_page","ask_for_api_key_page","download_page"]
 
-        load_ask_for_api_info_page()    
-        
-        submit_key_page_gui_objects["missing_api_key_message_label"].show_widget()
-        
-        submit_key_page_gui_objects["enter_username_label"].show_widget()        
+        load_ask_for_api_info_page()
 
-        submit_key_page_gui_objects["api_username_entry"].show_widget()
-        
+        # check for API Key file currently unused
+        currentFolder = os.path.dirname(os.path.realpath(__file__))
+        apiKeyFile = os.path.join(currentFolder, "apikey.txt")
 
-        submit_key_page_gui_objects["enter_api_key_label"].show_widget()
+        api_key_file_found = os.path.isfile(apiKeyFile)
 
-        
-        submit_key_page_gui_objects["api_key_entry"].show_widget()
+        if api_key_file_found is False:
 
-        
+            submit_key_page_gui_objects["missing_api_key_message_label"].show_widget(
+            )
+
+        if api_key_file_found:
+            apiKeys = None
+            with open(apiKeyFile) as apiFile:
+                apiKeys = apiFile.read().splitlines()
+
+            if apiKeys:
+                # print(len(apiKeys))
+                api_username = ""
+                api_key = ""
+
+                if len(apiKeys) > 0:
+                    api_username = apiKeys[0].split("=")[1]
+                if len(apiKeys) > 2:
+                    api_key = apiKeys[2].split("=")[1]
+                # show api username entry with username inside
+
+                submit_key_page_gui_objects["enter_username_label"].show_widget(
+                )
+                submit_key_page_gui_objects["api_username_entry"].show_widget()
+                submit_key_page_gui_objects["api_username_entry"].get_cell_widget().insert(
+                    0, api_username)
+
+                # show api key entry with key inside
+
+                submit_key_page_gui_objects["enter_api_key_label"].show_widget(
+                )
+                submit_key_page_gui_objects["api_key_entry"].show_widget()
+                submit_key_page_gui_objects["api_key_entry"].get_cell_widget().insert(
+                    0, api_key)
+
+        else:
+
+            submit_key_page_gui_objects["enter_username_label"].show_widget()
+
+            submit_key_page_gui_objects["api_username_entry"].show_widget()
+
+            submit_key_page_gui_objects["enter_api_key_label"].show_widget()
+
+            submit_key_page_gui_objects["api_key_entry"].show_widget()
+
         submit_key_page_gui_objects["api_key_page_submit_button"].show_widget()
 
+
 def clear_ask_for_api_info_page():
-        
     """ app_pages = ["","index_page","ask_for_api_key_page","download_page"]
 
     current_app_page = app_pages[0] """
-    # if the app is not currently displaying the download page 
-    
+    # if the app is not currently displaying the download page
+
     submit_key_page_gui_objects["missing_api_key_message_label"].hide_widget()
-    
+
     submit_key_page_gui_objects["enter_username_label"].hide_widget()
 
     submit_key_page_gui_objects["enter_api_key_label"].hide_widget()
-    
+
     submit_key_page_gui_objects["api_username_entry"].hide_widget()
 
     submit_key_page_gui_objects["api_key_entry"].hide_widget()
 
     submit_key_page_gui_objects["api_key_page_submit_button"].hide_widget()
-    
+
     if debug_messages:
         print("clear complete")
+
 
 """
 
@@ -709,11 +765,12 @@ Index page functions
 
 """
 
-def load_index_page():
-        
-    if ("index_page_image_label" in index_page_gui_objects) == False:        
 
-        #Using tkinter.PhotoImage
+def load_index_page():
+
+    if ("index_page_image_label" in index_page_gui_objects) == False:
+
+        # Using tkinter.PhotoImage
         """fun_image = PhotoImage(file = f"{app_setup_tools['currentFolder']}/images/folder.png")
         print(fun_image)
         resized_fun_image = fun_image.subsample(2, 2)
@@ -723,52 +780,66 @@ def load_index_page():
             GridPosition(0,0),
             "index_page_image_label" )"""
 
-        #using PIL.ImageTk.PhotoImage
+        # using PIL.ImageTk.PhotoImage
         if debug_messages:
             print("index_page_image was loaded")
 
-        base_image_file = Image.open(f"{app_setup_tools['currentFolder']}/images/bb.jpg")
+        base_image_file = Image.open(
+            f"{app_setup_tools['currentFolder']}/images/bb.jpg")
         bb_width, bb_height = base_image_file.size
-        size_alt_image = base_image_file.resize((int(bb_width/3),int(bb_height/3)))
+        size_alt_image = base_image_file.resize(
+            (int(bb_width / 3), int(bb_height / 3)))
         dope_bun_image = ImageTk.PhotoImage(size_alt_image)
 
         index_page_gui_objects["index_page_image_label"] = Cell_Widget(
-            Label(app_setup_tools["root"], image = dope_bun_image),
-            GridPosition(0,0),
-            "index_page_image_label" )
-                
-        index_page_gui_objects["index_page_image"] = dope_bun_image
-        
-def present_index_page_objects():
+            Label(app_setup_tools["root"], image=dope_bun_image),
+            GridPosition(0, 0),
+            "index_page_image_label")
 
+        index_page_gui_objects["index_page_image"] = dope_bun_image
+
+
+def present_index_page_objects():
     """app_pages = app_pages = ["","index_page","ask_for_api_key_page","download_page"]
 
     current_app_page = app_pages[0] """
     global current_app_page
     # set app page as index page
-    if current_app_page != app_pages[1]:        
+    if current_app_page != app_pages[1]:
         current_app_page = app_pages[1]
-        
+
         load_index_page()
 
         # readd image to index page image label
-        index_page_gui_objects["index_page_image_label"].get_cell_widget().config(image=index_page_gui_objects["index_page_image"])
+        index_page_gui_objects["index_page_image_label"].get_cell_widget().config(
+            image=index_page_gui_objects["index_page_image"])
         index_page_gui_objects["index_page_image_label"].show_widget()
+
 
 def hide_index_page_objects():
     if ("index_page_image_label" in index_page_gui_objects):
-    
+
         index_page_gui_objects["index_page_image_label"].hide_widget()
 
+
 def setup_app_menu():
-    menubar = Menu(root, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
+    menubar = Menu(
+        root,
+        background='#ff8000',
+        foreground='black',
+        activebackground='white',
+        activeforeground='black')
 
     file = Menu(menubar, tearoff=1, background='#ffcc99', foreground='black')
-    file.add_command(label="Download Posts and Pools", command=present_gui_download_page)  
-    file.add_command(label="Add API Key", command=present_ask_for_api_info_page)  
-        
-    file.add_separator()  
-    file.add_command(label="Exit", command=root.quit) 
+    file.add_command(
+        label="Download Posts and Pools",
+        command=present_gui_download_page)
+    file.add_command(
+        label="Add API Key",
+        command=present_ask_for_api_info_page)
+
+    file.add_separator()
+    file.add_command(label="Exit", command=root.quit)
     menubar.add_cascade(label="File", menu=file)
 
     root.config(menu=menubar)
@@ -779,17 +850,18 @@ def setup_app_menu():
 #
 #########################################################################
 
+
 root = Tk()
 
 app_setup_tools["root"] = root
 root.title("e621 Post/Pool GUI downloader")
 
-#setup menu
+# setup menu
 
 setup_app_menu()
 
 
-#show the idex page
+# show the idex page
 present_index_page_objects()
 
 # check for API Key file currently unused

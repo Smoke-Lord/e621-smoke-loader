@@ -10,6 +10,7 @@ example:
     python3 pool_test_1.py -p "0000" -d ./Downloads
 """
 
+from requests.auth import HTTPBasicAuth
 import time
 import os
 import sys
@@ -20,16 +21,17 @@ import sys
 from urllib.parse import urljoin, urlparse
 import time
 import sys
-import pip
+#import pip
 
-def import_or_install(package):
+
+"""def import_or_install(package):
     try:
         __import__(package)
     except ImportError:
         pip.main(['install', package])
 
-import_or_install(requests)
-from requests.auth import HTTPBasicAuth
+
+import_or_install(requests)"""
 
 
 headers = {"User-Agent": "E621-Pool-Downloader (by smokelord on E621)"}
@@ -58,7 +60,7 @@ class PullOptions:
 
     def get_pool_name(self):
         return self.pool_name
-    
+
     def get_key_path(self):
         return self.api_key_path
 
@@ -70,12 +72,12 @@ class PullOptions:
 global rateLimit, absoluteLimit, lastTime
 defaultURL = "https://e621.net/pools.json"
 #
-#need directory calling this script
-#os.getcwd()
+# need directory calling this script
+# os.getcwd()
 currentFolder = os.path.dirname(os.path.realpath(__file__))
 
 #currentFolder = os.getcwd()
-#default key location
+# default key location
 apiKeyFile = os.path.join(currentFolder, "apikey.txt")
 
 absoluteLimit = 320
@@ -97,7 +99,7 @@ target_directory = None
 # options object
 options_object = None
 
-#key path option
+# key path option
 key_arg_position = None
 key_path = None
 
@@ -331,9 +333,9 @@ def setup_options_object():
         if arg == "-key":
             if debug_messages:
                 print("key path arg passed")
-            
+
             key_arg_position = arg_count
-            
+
             if arg_len > key_arg_position + 1:
                 key_path = command_line_args[key_arg_position + 1]
 
@@ -341,8 +343,7 @@ def setup_options_object():
 
     # if key_path is not None create pull option with key_path
     if key_path:
-        return PullOptions(target_pool_id, directory_for_output,key_path)
-
+        return PullOptions(target_pool_id, directory_for_output, key_path)
 
     return PullOptions(target_pool_id, directory_for_output)
 ##########################################################################
@@ -363,7 +364,7 @@ API user and key setup
 # Get API key and Username from apikey.txt
 
 
-#apiKeyFile
+# apiKeyFile
 
 if options_object.get_key_path():
     apiKeyFile = options_object.get_key_path()

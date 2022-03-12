@@ -8,6 +8,7 @@ provide tags and the save directory, and the code will do the rest
 
 """
 
+from requests.auth import HTTPBasicAuth
 import requests
 import time
 import os
@@ -15,24 +16,27 @@ import sys
 from urllib.parse import urljoin, urlparse
 import time
 import sys
-import pip
 
-def import_or_install(package):
+"""def import_or_install(package):
     try:
         __import__(package)
     except ImportError:
         pip.main(['install', package])
 
-import_or_install(requests)
 
-from requests.auth import HTTPBasicAuth
+import_or_install(requests)"""
 
 headers = {"User-Agent": "E621-Mass-Post-Downloader (by smokelord on E621)"}
 
 debug_messages = False
 
+
 class PullOptions:
-    def __init__(self, search_tags=None, target_directory=None, api_key_path=None):
+    def __init__(
+            self,
+            search_tags=None,
+            target_directory=None,
+            api_key_path=None):
         self.search_tags = search_tags
         self.target_directory = target_directory
         self.api_key_path = api_key_path
@@ -72,7 +76,7 @@ directory_arg_position = None
 directory_for_output = None
 search_tags = None
 
-#api key file
+# api key file
 currentFolder = os.path.dirname(os.path.realpath(__file__))
 apiKeyFile = os.path.join(currentFolder, "apikey.txt")
 
@@ -98,9 +102,6 @@ lastTime = time.time()
 # Get API key and Username from apikey.txt
 
 
-
-
-
 def download_posts(passed_posts):
     for post in passed_posts:
         full_post_url = post["file"]["url"]
@@ -117,11 +118,10 @@ def download_process():
 
     # check if aki key file is present in directory
 
-    #api key file
+    # api key file
     currentFolder = os.path.dirname(os.path.realpath(__file__))
     apiKeyFile = os.path.join(currentFolder, "apikey.txt")
 
-    
     if opt_obj.get_key_path():
         apiKeyFile = opt_obj.get_key_path()
 
@@ -150,7 +150,6 @@ def download_process():
     # check to make sure api data was entered
     if apiUser == "" or apiKey == "":
         print(text="Please actually put your username and API key into apikey.txt")
-        
 
     posts_found_in_page = True
     page_number = 1
@@ -206,6 +205,7 @@ def download_process():
         # download everypost
         download_posts(all_posts)
 
+
 def setup_options_object():
 
     search_tags = None
@@ -246,9 +246,9 @@ def setup_options_object():
         if arg == "-key":
             if debug_messages:
                 print("key path arg passed")
-            
+
             key_arg_position = arg_count
-            
+
             if arg_len > key_arg_position + 1:
                 key_path = command_line_args[key_arg_position + 1]
 
@@ -256,8 +256,7 @@ def setup_options_object():
 
     # if key_path is not None create pull option with key_path
     if key_path:
-        return PullOptions(search_tags, directory_for_output,key_path)
-
+        return PullOptions(search_tags, directory_for_output, key_path)
 
     return PullOptions(search_tags, directory_for_output)
 
@@ -269,8 +268,6 @@ def setup_options_object():
 opt_obj = setup_options_object()
 
 
-
-
 if opt_obj.get_search_tags():
     if debug_messages:
         print(f"search tags: {opt_obj.get_search_tags()}")
@@ -279,7 +276,7 @@ if opt_obj.get_search_tags():
         # do thing
         if debug_messages:
             print(f"directory_for_output: {opt_obj.get_target_directory()}")
-        #did not remove the option object creation
+        # did not remove the option object creation
         #opt_obj = PullOptions(opt_obj.get_search_tags(), opt_obj.get_target_directory())
 
         """if debug_messages:
