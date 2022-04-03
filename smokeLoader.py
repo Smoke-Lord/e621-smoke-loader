@@ -13,7 +13,13 @@ from tkinter import *
 from tkinter import filedialog
 import _thread
 import os
-from PIL import ImageTk, Image, _tkinter_finder
+import platform
+from PIL import ImageTk, Image
+import pickle
+import asyncio
+import _thread
+import socket
+
 
 # A vector like class for positioning widgets
 
@@ -75,7 +81,12 @@ class Cell_Widget:
 
 
 debug_messages = False
+test_debuging = False
 currentFolder = os.path.dirname(os.path.realpath(__file__))
+
+server_port_number = 8888
+
+cleaned_current_directory_path = currentFolder.replace(' ', '\\ ')
 
 download_gui_modes = ["tag download", "pool download"]
 
@@ -115,6 +126,7 @@ submit_key_page_gui_objects = {}
 
 index_page_gui_objects = {}
 
+
 ####################################################
 #
 # Ask for api key code
@@ -129,14 +141,14 @@ def record_provided_credentials_to_file():
 
     passed_api_key = submit_key_page_gui_objects["api_key_entry"].get_cell_widget(
     ).get()
-
-    print(f"user passed: {passed_username}")
-    print(f"api key passed: {passed_api_key}")
+    if debug_messages:
+        print(f"user passed: {passed_username}")
+        print(f"api key passed: {passed_api_key}")
 
     with open(apiKeyFile, "w") as apiFile:
         apiFile.write(
-            f"user={passed_username}" +
-            os.linesep +
+            f"user={passed_username}\n" +
+            "\n" +
             f"api_key={passed_api_key}")
 
     clear_ask_for_api_info_page()
@@ -219,7 +231,29 @@ def tag_e621_download():
         # call tag downloader
         # python source call
 
-        command = f"python3 e621_download_by_tag.py -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
+        target_system = platform.system()
+
+        if target_system == 'Linux':
+            # linux
+            if server_port_number:
+                command = f"\"{currentFolder}\"/e621_download_by_tag -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt -port {server_port_number}"
+            else:
+                command = f"\"{currentFolder}\"/e621_download_by_tag -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
+        elif target_system == 'Darwin':
+            # OS X mac
+            idk = ":>"
+        elif target_system == 'Windows':
+            # Windows...
+            if test_debuging:
+
+                # server_port_number
+                if server_port_number:
+                    command = f"python3 e621_download_by_tag.py -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt -port {server_port_number}"
+                #command = f"python3 e621_download_by_tag.py -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
+                else:
+                    command = f"python3 e621_download_by_tag.py -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
+            else:
+                command = f"\"{cleaned_current_directory_path}\"/e621_download_by_tag.exe -t \"{tags_entry_input}\" -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
 
         # send the command to system
         os.system(command)
@@ -277,8 +311,33 @@ def pull_e621_pool():
     # input pass checks
     if ready_status:
 
-        command = f"python3 e621_pool_downloader.py -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
+        target_sysetem = platform.system()
 
+        if target_sysetem == 'Linux':
+            # linux
+            if server_port_number:
+                command = f"\"{currentFolder}\"/e621_pool_downloader -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt -port {server_port_number}"
+            else:
+                command = f"\"{currentFolder}\"/e621_pool_downloader -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
+
+        elif target_sysetem == 'Darwin':
+            # OS X mac
+            idk = ":>"
+        elif target_sysetem == 'Windows':
+            # Windows...
+            if test_debuging:
+                # runs .py instead of exe
+                if server_port_number:
+                    command = f"\"python3 e621_pool_downloader.py -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt -port {server_port_number}"
+                else:
+                    command = f"python3 e621_pool_downloader.py -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
+
+            else:
+
+                if server_port_number:
+                    command = f"\"{currentFolder}\"/e621_pool_downloader.exe -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt -port {server_port_number}"
+                else:
+                    command = f"\"{currentFolder}\"/e621_pool_downloader.exe -p {passed_pool_id} -d {passed_save_directory} -key \"{currentFolder}\"/apikey.txt"
         os.system(command)
 
         download_page_gui_objects["download_button"].get_cell_widget().config(
@@ -778,7 +837,23 @@ def load_index_page():
         index_page_gui_objects["index_page_image_label"] = Cell_Widget(
             Label(app_setup_tools["root"], image = fun_image),
             GridPosition(0,0),
-            "index_page_image_label" )"""
+            "index_page_image_label" )
+
+        if debug_messages:
+            print("index_page_image was loaded")
+            """
+        # cannot read jpg
+        """base_image_file = PhotoImage(file = f"{app_setup_tools['currentFolder']}/images/bb.jpg")
+
+        size_alt_image = base_image_file.subsample(2, 2)
+        dope_bun_image = ImageTk.PhotoImage(size_alt_image)
+
+        index_page_gui_objects["index_page_image"] = dope_bun_image
+
+        index_page_gui_objects["index_page_image_label"] = Cell_Widget(
+            Label(app_setup_tools["root"], image=dope_bun_image),
+            GridPosition(0, 0),
+            "index_page_image_label")"""
 
         # using PIL.ImageTk.PhotoImage
         if debug_messages:
@@ -791,12 +866,12 @@ def load_index_page():
             (int(bb_width / 3), int(bb_height / 3)))
         dope_bun_image = ImageTk.PhotoImage(size_alt_image)
 
+        index_page_gui_objects["index_page_image"] = dope_bun_image
+
         index_page_gui_objects["index_page_image_label"] = Cell_Widget(
             Label(app_setup_tools["root"], image=dope_bun_image),
             GridPosition(0, 0),
             "index_page_image_label")
-
-        index_page_gui_objects["index_page_image"] = dope_bun_image
 
 
 def present_index_page_objects():
@@ -844,6 +919,124 @@ def setup_app_menu():
 
     root.config(menu=menubar)
 
+
+####################################################
+#
+# server for tool communication
+#
+####################################################
+
+async def handle_server_calls(reader, writer):
+    data = await reader.read(100)
+    message = data
+    addr = writer.get_extra_info('peername')
+
+    inflated_message = pickle.loads(message)
+
+    if debug_messages:
+        print(f"Received {inflated_message} from {addr!r}")
+
+    #print(f"Send: {message!r}")
+    # writer.write(data)
+
+    # execute command based on the recieved output
+
+    # change download text from recieved output
+
+    await writer.drain()
+
+    print("Close the connection")
+    writer.close()
+
+
+async def main():
+    server = await asyncio.start_server(
+        handle_server_calls, '127.0.0.1', 8888)
+
+    addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
+    if debug_messages:
+        print(f'Serving on {addrs}')
+
+    async with server:
+        await server.serve_forever()
+
+
+def socket_server():
+    HEADER_LENGTH = 100
+    HEADERSIZE = 10
+
+    DATA_LENGTH = None
+
+    IP = "localhost"
+    PORT = server_port_number
+    # create an INET, STREAMing socket
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # bind the socket to a public host, and a well-known port
+
+    serversocket.bind((IP, PORT))
+    # become a server socket
+    serversocket.listen()
+
+    while True:
+
+        try:
+            # accept connections from outside
+            (clientsocket, address) = serversocket.accept()
+            # now do something with the clientsocket
+            # in this case, we'll pretend this is a threaded server
+            if debug_messages:
+                print(f"{clientsocket}: {address} accepted")
+
+            full_msg = b''
+            all_data = None
+            new_msg = True
+
+            while True:
+
+                msg = clientsocket.recv(18)
+                if len(msg) <= 0:
+                    print("break called")
+                    break
+                else:
+                    full_msg += msg
+
+                    """if len(full_msg) > 0:
+                        print(full_msg)
+                        # read data size
+                        if full_msg.isnumeric():
+
+                            print("data amount recieved")"""
+            inflated = pickle.loads(full_msg)
+
+            if debug_messages:
+                print(inflated)
+            # print(str(full_msg).find('\\'))
+            #inflated = pickle.loads(all_data)
+            # change download message text
+            change_label_text(
+                download_page_gui_objects["download_message_label"].get_cell_widget(),
+                inflated['message'])
+            if debug_messages:
+                print(inflated['message'])
+        except KeyboardInterrupt:
+            # end code
+            serversocket.close()
+            exit()
+
+
+def run_server():
+
+    # asyncio.run(main())
+    socket_server()
+
+
+def open_tool_communication():
+    try:
+        _thread.start_new_thread(run_server, ())
+
+    except BaseException:
+        print("Error: unable to start server thread")
+
 #########################################################################
 #
 # Start of tkinter functions
@@ -851,10 +1044,11 @@ def setup_app_menu():
 #########################################################################
 
 
+open_tool_communication()
 root = Tk()
 
 app_setup_tools["root"] = root
-root.title("e621 Post/Pool GUI downloader")
+root.title("SmokeLoader e621 downloader")
 
 # setup menu
 

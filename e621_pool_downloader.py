@@ -21,17 +21,10 @@ import sys
 from urllib.parse import urljoin, urlparse
 import time
 import sys
-#import pip
-
-
-"""def import_or_install(package):
-    try:
-        __import__(package)
-    except ImportError:
-        pip.main(['install', package])
-
-
-import_or_install(requests)"""
+import asyncio
+import pickle
+import _thread
+import socket
 
 
 headers = {"User-Agent": "E621-Pool-Downloader (by smokelord on E621)"}
@@ -43,11 +36,18 @@ debug_messages = False
 
 
 class PullOptions:
-    def __init__(self, pool_id=None, target_directory=None, api_key_path=None):
+
+    def __init__(
+            self,
+            pool_id=None,
+            target_directory=None,
+            api_key_path=None,
+            server_port_number=None):
         self.pool_id = pool_id
         self.target_directory = target_directory
         self.pool_name = None
         self.api_key_path = api_key_path
+        self.server_port_number = server_port_number
 
     def get_search_pool_id(self):
         return self.pool_id
@@ -67,16 +67,21 @@ class PullOptions:
     def set_key_path(self, passed_key_path):
         self.api_key_path = passed_key_path
 
+    def get_server_port_number(self):
+        return self.server_port_number
+
+    def set_server_port_number(self, passed_server_port_number):
+        self.server_port_number = passed_server_port_number
+
 
 # Setup variables:
 global rateLimit, absoluteLimit, lastTime
 defaultURL = "https://e621.net/pools.json"
 #
 # need directory calling this script
-# os.getcwd()
+
 currentFolder = os.path.dirname(os.path.realpath(__file__))
 
-#currentFolder = os.getcwd()
 # default key location
 apiKeyFile = os.path.join(currentFolder, "apikey.txt")
 
@@ -102,6 +107,55 @@ options_object = None
 # key path option
 key_arg_position = None
 key_path = None
+
+
+####################################
+#
+# socket client
+#
+####################################
+
+def socket_send_message(passed_message):
+
+    IP = "localhost"
+    PORT = options_object.get_server_port_number()
+    #PORT = 8888
+    sender_name = "pool downloader"
+
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    client_socket.connect((IP, PORT))
+
+    client_socket.setblocking(False)
+    if debug_messages:
+        print(
+        f"socket_send_message port - {options_object.get_server_port_number()}")
+    data = {
+        'sender': sender_name,
+        'message': passed_message,
+
+    }
+    flatened_message = pickle.dumps(data)
+
+    if debug_messages:
+        print("socket_send_message - message sent")
+
+    client_socket.send(flatened_message)
+    # message appears on server when the socket closes
+    client_socket.close()
+
+
+def send_message_to_gui_server(passed_message):
+    if debug_messages:
+        print("starting thread")
+
+    try:
+        
+        _thread.start_new_thread(socket_send_message, (passed_message,))
+
+    except BaseException:
+        if debug_messages:
+            print(sys.exc_info())
 
 
 def rateLimiting():
@@ -168,15 +222,36 @@ def download_pool_posts(pool_post_file_addresses):
                 if options_object.get_search_pool_id():
                     if options_object.get_pool_name():
                         # download the file using the systems wget
-                        os.system(
-                            f"wget --no-check-certificate -nc {post_url} -P \"{options_object.get_target_directory()}/{options_object.get_pool_name()}\"")
+
+                        # check if pool item alread exists
+                        file_to_check = f"{options_object.get_target_directory()}/{options_object.get_pool_name()}/{selected_file_name}"
+                        file_to_download_exist_in_directory = os.path.isfile(
+                            file_to_check)
+
+                        # if file_to_download_exist_in_directory is false. download the file
+                         
                         wget_download_filename = post_url[(
                             post_url).rindex('/'):]
 
-                        # rename_output_file
-                        os.rename(
-                            f"{options_object.get_target_directory()}/{options_object.get_pool_name()}/{wget_download_filename}",
-                            f"{options_object.get_target_directory()}/{options_object.get_pool_name()}/{selected_file_name}")
+                        # send message to gui
+                        status_message = f"Downloading {wget_download_filename}"
+
+                        send_message_to_gui_server(status_message)
+
+                        if not file_to_download_exist_in_directory:
+
+                            os.system(
+                                f"wget --no-check-certificate -nc {post_url} -P \"{options_object.get_target_directory()}/{options_object.get_pool_name()}\"")
+
+                            # rename_output_file
+                            os.rename(
+                                f"{options_object.get_target_directory()}/{options_object.get_pool_name()}/{wget_download_filename}",
+                                f"{options_object.get_target_directory()}/{options_object.get_pool_name()}/{selected_file_name}")
+
+                        elif file_to_download_exist_in_directory:
+                            if debug_messages:
+                                print(
+                                    f"skipping {wget_download_filename} file: {file_to_check} exists in directory")
 
         pool_order_count += 1
 
@@ -298,6 +373,8 @@ def setup_options_object():
     target_pool_id = None
     directory_for_output = None
     arg_count = 0
+    key_path = None
+    server_port_number = None
 
     command_line_args = sys.argv
 
@@ -329,7 +406,7 @@ def setup_options_object():
 
             if arg_len > directory_arg_position + 1:
                 directory_for_output = command_line_args[directory_arg_position + 1]
-
+                
         if arg == "-key":
             if debug_messages:
                 print("key path arg passed")
@@ -339,13 +416,31 @@ def setup_options_object():
             if arg_len > key_arg_position + 1:
                 key_path = command_line_args[key_arg_position + 1]
 
+        if arg == "-port":
+            if debug_messages:
+                print("server port number arg passed")
+
+            server_port_arg_position = arg_count
+            if arg_len > server_port_arg_position + 1:
+                server_port_number = command_line_args[server_port_arg_position + 1]
+
         arg_count = arg_count + 1
 
     # if key_path is not None create pull option with key_path
     if key_path:
+
+        if server_port_number:
+            return PullOptions(
+                target_pool_id,
+                directory_for_output,
+                key_path,
+                server_port_number)
+
         return PullOptions(target_pool_id, directory_for_output, key_path)
 
     return PullOptions(target_pool_id, directory_for_output)
+
+
 ##########################################################################
 #
 #   Start of the code
@@ -354,7 +449,6 @@ def setup_options_object():
 
 
 # set options object directory and pool id
-
 options_object = setup_options_object()
 
 """
@@ -390,12 +484,10 @@ if debug_messages:
     print(apiKey)
 """
 
-####################
 
-###
+
 all_posts = []
 
-###
 
 # start download if provided a pool id
 
