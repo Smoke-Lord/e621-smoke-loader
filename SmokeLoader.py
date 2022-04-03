@@ -13,7 +13,7 @@ from tkinter import *
 from tkinter import filedialog
 import _thread
 import os
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, _tkinter_finder
 
 # A vector like class for positioning widgets
 
